@@ -21,19 +21,35 @@ app.get('/views/*', (req, res) => {
    res.sendFile(path.join(__dirname + '/views'));
 });
 
-const db = pgp('postgres://postgres:***********@localhost:5432/yulia');
+const db = pgp('postgres://postgres:m+|N|*az@localhost:5432/testdb');
 
 
-app.post('/login')
+app.post('/registr', (req, res) => {
+  let newname = document.getElementById('name').value;
+  let name = req.body.newname;
+  console.log('req.body.newname');
+  let email = document.getElementById('email').value;
+      email = req.body.email;
+  let pass = document.getElementById('pass').value;
+      pass = req.body.pass;
+  db.any(`INSERT INTO users VALUES(2, ${name}, ${email}, ${pass})`)
+  .then(Response => {
+   console.log(Response.name); // print user name;
+  })
+  .catch(error => {
+      console.log(error); // print the error;
+  });
+})
 
 // select and return user name from id:
-db.one(`SELECT * FROM users WHERE "UserId" = 17`)
+db.one(`SELECT * FROM users WHERE name = 'Alice'`)
     .then(Response => {
-     console.log(Response.Username); // print user name;
+     console.log(Response.name); // print user name;
     })
     .catch(error => {
         console.log(error); // print the error;
     });
+
 
 const server = app.listen(8080, () => {
    const host = server.address().address
