@@ -21,7 +21,7 @@ app.get('/views/*', (req, res) => {
    res.sendFile(path.join(__dirname + '/views'));
 });
 
-const db = pgp('postgres://postgres:kfgekz8906@localhost:5432/yulia');
+const db = pgp('postgres://postgres:***********@localhost:5432/yulia');
 
 
 app.post('/login')
