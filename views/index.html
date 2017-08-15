@@ -10,17 +10,17 @@
     <h1>Hello user</h1>
     <h2>Log in</h2>
     <form action="/login" method="POST">
-        <input type="email" placeholder="Email" required>
-        <input type="password" placeholder="Password" required>
+        <input type="email" name="emailLog" placeholder="Email" required>
+        <input type="password" name="passLog" placeholder="Password" required>
         <input type="submit" value="Submit">
         <input type="reset" value="Reset">
     </form>
     <h2>Registration</h2>
     <form action="/registr" method="POST">
-        <input type="text" id="name" placeholder="name" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="pass" placeholder="Password" required>
-        <input type="password" placeholder="Repeat your password" required>
+        <input type="text" name="name" placeholder="name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="pass" placeholder="Password" required>
+        <input type="password" name="pass2" placeholder="Repeat your password" required>
         <input type="submit" value="Submit">
         <input type="reset" value="Reset">
     </form>

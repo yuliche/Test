@@ -4,52 +4,83 @@ const express = require('express'),
       pgp = require('pg-promise')(/*options*/),
       path = require('path'),
       nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'testsendergame@gmail.com', // Your email id
+            pass: 'testemail06' // Your password
+        }
+    });
+function createLetter(user){
+return {
+    from: 'testsendergame@gmail.com>', // sender address
+    to: user.email, // list of receivers
+    subject: 'Email Example', // Subject line
+    text: `Hello my dear' + ${user.name}`
+};
+}
 
 app.use(express.static('views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-
-  console.log(`${req.method} ${res.statusCode} ${req.url}`); //added method & StatusCode
     res.sendFile(path.join(__dirname + '/views' + 'index.html'));
-
 });
 
 app.get('/views/*', (req, res) => {
-
    res.sendFile(path.join(__dirname + '/views'));
 });
 
-const db = pgp('postgres://postgres:m+|N|*az@localhost:5432/testdb');
+const db = pgp('postgres://postgres:***********@localhost:5432/testdb');
+
+app.post('/login', (req, res) => {
+    const email = req.body.emailLog;
+    const pass = req.body.passLog;
+    db.one(`SELECT pass, name FROM users WHERE email = '${email}'`)
+    .then(data => {
+        if (data.pass === pass){
+            console.log(`Hello ${data.name}`);
+        }
+    }).catch(error => console.log('error:', error));
+});
 
 
 app.post('/registr', (req, res) => {
-  let newname = document.getElementById('name').value;
-  let name = req.body.newname;
-  console.log('req.body.newname');
-  let email = document.getElementById('email').value;
-      email = req.body.email;
-  let pass = document.getElementById('pass').value;
-      pass = req.body.pass;
-  db.any(`INSERT INTO users VALUES(2, ${name}, ${email}, ${pass})`)
-  .then(Response => {
-   console.log(Response.name); // print user name;
-  })
-  .catch(error => {
-      console.log(error); // print the error;
-  });
+  if (req.body.pass !== req.body.pass2) {
+    next(new Error('Passwords do not match'));
+  }
+
+  const newUser = {
+      name : req.body.name,
+      email : req.body.email,
+      pass : req.body.pass
+    } 
+      //console.log(newUser.name, newUser.email, newUser.pass);
+      addNewUserToDB (newUser);  
+      sendEmail(newUser);
+});
+
+function addNewUserToDB(user){
+db.one(`INSERT INTO users(name, email, pass) VALUES('${user.name}', '${user.email}', '${user.pass}')`)
+.then(() => {
+    res.send('Success');/**************************///
 })
+    .catch(error => console.log('error:', error));
+    }
 
-// select and return user name from id:
-db.one(`SELECT * FROM users WHERE name = 'Alice'`)
-    .then(Response => {
-     console.log(Response.name); // print user name;
-    })
-    .catch(error => {
-        console.log(error); // print the error;
-    });
 
+function sendEmail(user){
+    transporter.sendMail(createLetter(user), (error, info) => {
+    if(error){
+        console.log(error);
+        res.json({yo: 'error'});
+    }else{
+        console.log('Message sent: ' + info.response);
+        res.json({yo: info.response});
+    };
+});
+}
 
 const server = app.listen(8080, () => {
    const host = server.address().address
