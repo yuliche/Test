@@ -4,6 +4,8 @@ const express = require('express'),
       pgp = require('pg-promise')(/*options*/),
       path = require('path'),
       nodemailer = require('nodemailer');
+
+function handleSayHello(req, res){
 const transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
@@ -11,14 +13,25 @@ const transporter = nodemailer.createTransport({
             pass: 'testemail06' // Your password
         }
     });
-function createLetter(user){
-return {
-    from: 'testsendergame@gmail.com>', // sender address
-    to: user.email, // list of receivers
-    subject: 'Email Example', // Subject line
-    text: `Hello my dear' + ${user.name}`
-};
+
+    transporter.sendMail(mailOptions, (error, info) => {
+    if(error){
+        console.log(error);
+        res.json({yo: 'error'});
+    }else{
+        console.log('Message sent: ' + info.response);
+        res.json({yo: info.response});
+    };
+});
 }
+
+const mailOptions = {
+    from: 'testsendergame@gmail.com', // sender address
+    to: 'testsendergame@gmail.com', // list of receivers
+    subject: 'Email Example', // Subject line
+    text: `Hello my dear` // + ${user.name}
+}
+
 
 app.use(express.static('views'));
 app.use(bodyParser.json());
@@ -32,7 +45,7 @@ app.get('/views/*', (req, res) => {
    res.sendFile(path.join(__dirname + '/views'));
 });
 
-const db = pgp('postgres://postgres:***********@localhost:5432/testdb');
+const db = pgp('postgres://postgres:***@localhost:5432/testdb');
 
 app.post('/login', (req, res) => {
     const email = req.body.emailLog;
@@ -58,7 +71,8 @@ app.post('/registr', (req, res) => {
     } 
       //console.log(newUser.name, newUser.email, newUser.pass);
       addNewUserToDB (newUser);  
-      sendEmail(newUser);
+      handleSayHello;
+      res.redirect(307, '/');/**************************///
 });
 
 function addNewUserToDB(user){
@@ -70,17 +84,6 @@ db.one(`INSERT INTO users(name, email, pass) VALUES('${user.name}', '${user.emai
     }
 
 
-function sendEmail(user){
-    transporter.sendMail(createLetter(user), (error, info) => {
-    if(error){
-        console.log(error);
-        res.json({yo: 'error'});
-    }else{
-        console.log('Message sent: ' + info.response);
-        res.json({yo: info.response});
-    };
-});
-}
 
 const server = app.listen(8080, () => {
    const host = server.address().address
