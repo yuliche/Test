@@ -45,9 +45,9 @@ app.get('/views/*', (req, res) => {
    res.sendFile(path.join(__dirname + '/views'));
 });
 
-const db = pgp('postgres://postgres:***@localhost:5432/testdb');
+const db = pgp('postgres://postgres:kfgekz8906@localhost:5432/testdb');
 
-app.post('/login', (req, res) => {
+app.post('/login', (req, res, next) => {
     const email = req.body.emailLog;
     const pass = req.body.passLog;
     db.one(`SELECT pass, name FROM users WHERE email = '${email}'`)
@@ -55,35 +55,27 @@ app.post('/login', (req, res) => {
         if (data.pass === pass){
             console.log(`Hello ${data.name}`);
         }
-    }).catch(error => console.log('error:', error));
+    }).catch(err => {
+      return next(err);
+});
 });
 
 
-app.post('/registr', (req, res) => {
+app.post('/registr', (req, res, next) => {
   if (req.body.pass !== req.body.pass2) {
     next(new Error('Passwords do not match'));
   }
-
-  const newUser = {
-      name : req.body.name,
-      email : req.body.email,
-      pass : req.body.pass
-    } 
-      //console.log(newUser.name, newUser.email, newUser.pass);
-      addNewUserToDB (newUser);  
-      handleSayHello;
-      res.redirect(307, '/');/**************************///
-});
-
-function addNewUserToDB(user){
-db.one(`INSERT INTO users(name, email, pass) VALUES('${user.name}', '${user.email}', '${user.pass}')`)
+db.none(`INSERT INTO users(name, email, pass)` +
+ `VALUES('${req.body.name}', '${req.body.email}', '${req.body.pass}')`, req.body)
 .then(() => {
-    res.send('Success');/**************************///
-})
-    .catch(error => console.log('error:', error));
-    }
+      res.status(200);
+    }).catch(err => {
+      return next(err);
+    });
 
-
+    // res.redirect(307, '/');/**************************///
+});
+     // handleSayHello;
 
 const server = app.listen(8080, () => {
    const host = server.address().address
